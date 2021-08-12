@@ -68,3 +68,21 @@ def print_all_users(user_dict):
     print(table)
 
 
+
+# Prints a table with every contact and its connection data
+def print_contacts(user_dict):
+    table = PrettyTable()
+    table.field_names = [f'{BOLD}USER{ENDC}',
+                         f'{BOLD}SHOW{ENDC}',
+                         f'{BOLD}STATUS{ENDC}',
+                         f'{BOLD}SUBSCRIPTION{ENDC}',
+                         f'{BOLD}JID{ENDC}']
+    table.align = 'l'
+    for jid, user in user_dict.items():
+        user_data = user.get_connection_data()
+        user_data.append(jid)
+        table.add_row(user_data)
+
+    table.sortby = f'{BOLD}SHOW{ENDC}'
+    print(table)
+
