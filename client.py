@@ -677,3 +677,39 @@ class RegisterBot(ClientXMPP):
 
         self.disconnect()
 
+
+class User():
+    def __init__(self, jid, name, show, status, subscription, username, resource=None):
+        self.jid = jid
+        self.name = name
+        self.show = show
+        self.status = status
+        self.subscription = subscription
+        self.username = username
+        self.resource = resource
+        self.messages = []
+
+    def update_data(self, status, show, resource=None, subscription=None):
+        self.status = status
+        self.show = show
+        self.resource = resource
+        if subscription:
+            self.subscription = subscription
+
+    def get_connection_data(self):
+        return [self.username, self.show, self.status, self.subscription]
+
+    def add_message_to_list(self, msg):
+        self.messages.append(msg)
+
+    def clean_unread_messages(self):
+        self.messages.clear()
+
+    def get_messages(self):
+        return self.messages
+
+    def get_full_jid(self):
+        return f'{self.jid}/{self.resource}'
+
+    def get_all_data(self):
+        return [self.jid, self.name, self.show, self.status, self.subscription, self.username]
