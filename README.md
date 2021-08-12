@@ -2,6 +2,8 @@
 
 ## By: Andree Toledo 18439
 
+## Link de presentacion: https://docs.google.com/presentation/d/1TEGBOLMT3nrcsOFRP6w0b9HQZfUu7QyTzlydrcqOR2o/edit?usp=sharing
+
 ## Installation guide
 
 1. Open files
