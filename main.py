@@ -372,3 +372,23 @@ if __name__ == "__main__":
             print('\nRegister a new account')
             username = input('Enter your jid: ')
             password = getpass('Enter your password: ')
+
+            if username and password:
+                print(
+                    f'{WARNING}Initiating registration process... please wait.{ENDC}')
+                xmpp = client.RegisterBot(username, password)
+                xmpp.register_plugin('xep_0030')  # Service Discovery
+                xmpp.register_plugin('xep_0004')  # Data forms
+                xmpp.register_plugin('xep_0066')  # Out-of-band Data
+                xmpp.register_plugin('xep_0077')  # In-band Registration
+                xmpp.register_plugin('xep_0045')  # Groupchat
+                xmpp.register_plugin('xep_0199')  # XMPP Ping
+                xmpp['xep_0077'].force_registration = True
+
+                if xmpp.connect():
+                    xmpp.process(block=True)
+                else:
+                    print(f'{FAIL}Unable to connect to the server{ENDC}')
+            else:
+                print(f'{FAIL}Input is incorrect.')
+
