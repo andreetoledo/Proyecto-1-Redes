@@ -131,3 +131,178 @@ def handle_session(event):
             roster = xmpp.get_user_dict()
             print_contacts(roster)
 
+        # OPTION 2: Add a user to my contact list
+        elif option == '2':
+            print(f'\n{BOLD}Add user to contact list{ENDC}')
+            user_jid = input('Enter user jid: ')
+
+            if user_jid and '@' in user_jid:
+                xmpp.add_user(user_jid)
+            else:
+                print(invalid_option)
+
+        # OPTION 3: Get user details
+        elif option == '3':
+            username = input('Enter a username to search: ')
+
+            user_data, amount = xmpp.get_user_data(username)
+
+            if not user_data:
+                print(f'{RED}User not found...{ENDC}')
+            else:
+                print_user_data(user_data, amount)
+
+        # OPTION 4: Private session
+        elif option == '4':
+            print(f'\n{BOLD}Send a private message{ENDC}\n')
+            # Get updated roster
+            roster = xmpp.get_user_dict()
+
+            # Get all users as list
+            users = list(roster.keys())
+
+            # Print table of users with their index
+            print_contact_index(roster)
+            recipient = input('\nEnter recipient index or jid: ')
+
+            if '@' in recipient:
+                dest = recipient
+
+            else:
+                try:
+                    recipient = int(recipient)
+                    # Check if user index was correct
+                    dest = users[recipient-1]
+                except ValueError:
+                    # Else, repeat
+                    print(invalid_option)
+                    continue
+
+            received_messages = roster[dest].get_messages()
+            if received_messages:
+                print(
+                    f'\n{YELLOW}The message(s) with {dest} are:{ENDC}')
+                for sender, msg in received_messages:
+                    print(f'\t{sender}:  {msg}')
+
+            new_message = input('\nEnter a message: ')
+            xmpp.send_session_message(dest, new_message)
+
+        # OPTION 5: Group chat options
+        elif option == '5':
+
+            print(group_options)
+
+            group_option = input('\tEnter an option: ')
+
+            # 1. Create a group
+            if group_option == '1':
+                print(f'\n{BOLD}Create a group chat{ENDC}')
+                group_name = input('Room URL: ')
+                nick = input('Nick: ')
+
+                if nick and group_name:
+                    xmpp.create_new_room(group_name, nick)
+                    print(f'{OKGREEN}{group_name} created!{ENDC}')
+                else:
+                    print(f'{FAIL}Please set a group name and a nick{ENDC}')
+                    continue
+
+            # 2. Join a group
+            elif group_option == '2':
+                print(f'\n{BOLD}Join a group chat{ENDC}')
+
+                room = input('Room URL: ')
+                nick = input('Nick: ')
+
+                if nick and room:
+                    xmpp.join_room(room, nick)
+                    print(f'{OKGREEN}Joined {room}{ENDC}')
+                else:
+                    print(f'{FAIL}Please set a group name and a nick{ENDC}')
+                    continue
+
+
+            # 3. Send message to a group
+            elif group_option == '3':
+
+                print(f'\n{BOLD}Send a message to a group{ENDC}')
+                room_dict = xmpp.get_group_dict()
+
+                if room_dict:
+                    # Print table of groups with their index
+                    print_groups(room_dict)
+                    recipient = input('\nEnter recipient index or jid: ')
+
+                    if '@' in recipient:
+                        dest = recipient
+                    else:
+                        try:
+                            recipient = int(recipient)
+                            # Check if user index was correct
+                            dest = list(room_dict.keys())[recipient-1]
+                        except ValueError:
+                            # Else, repeat
+                            print(invalid_option)
+                            continue
+
+                    received_messages = room_dict[dest].get_messages()
+                    if received_messages:
+                        print(
+                            f'\n{YELLOW}The message(s) from {dest} are:{ENDC}')
+                        for sender, msg in received_messages:
+                            print(f'\t{sender} --> {msg}')
+
+                    new_message = input('\nEnter a message: ')
+
+                    if new_message:
+                        if xmpp.send_groupchat_message(dest, new_message):
+                            print(f'{OKGREEN}Message sent!{ENDC}')
+                        else:
+                            print(error_msg)
+
+                else:
+                    print(f'{FAIL}You havent joined any room yet.{ENDC}')
+
+            # 4. Leave group
+            elif group_option == '4':
+                print(f'\n{BOLD}Leave room{ENDC}')
+                room = input('Room URL: ')
+                nick = input('Nick: ')
+
+                if room and nick:
+                    xmpp.leave_room(room, nick)
+                    print(f'{OKGREEN}You left the group.{ENDC}')
+                else:
+                    print(f'{FAIL}You must provide a nick and a room!{ENDC}')
+                    continue
+
+            # 5. Cancel
+            elif group_option == '5':
+                continue
+
+            # Invalid option
+            else:
+                print(invalid_option)
+
+        # OPTION 6: Presence message
+        elif option == '6':
+            print(f'\n{BOLD}Presence message{ENDC}')
+            print(show_options)
+
+            # Let user decide his options
+            show_input = input('Show: ')
+            status = input('Status: ')
+
+            try:
+                # Validate if user selected a valid option
+                show = show_array[int(show_input)-1]
+            except:
+                # If not, go to the default one.
+                print(
+                    f'{WARNING}Incorrect show option selected... Seting show to "available".')
+                show = 'available'
+
+            # Send the presence message and inform the user about it.
+            xmpp.presence_message(show, status)
+            print(f'{OKGREEN}Presence message sent!{ENDC}')
