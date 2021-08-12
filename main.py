@@ -15,6 +15,23 @@ from consts import *
 
 close_login = False
 
+# With tkinter, opens a windows for the user to select a file.
 def get_file_path():
     file_path = filedialog.askopenfilename()
     return file_path
+
+# Prints a table with all of the groups the user is part of
+def print_groups(group_dict):
+    table = PrettyTable()
+    table.field_names = [f'{BOLD}No.{ENDC}',
+                         f'{BOLD}ROOM{ENDC}',
+                         f'{BOLD}NICK{ENDC}']
+
+    table.align = 'l'
+    counter = 1
+    for url, group in group_dict.items():
+        group_info = group.get_data()
+        table.add_row([counter, group_info[0], group_info[1]])
+        counter += 1
+
+    print(table)
