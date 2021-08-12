@@ -107,3 +107,27 @@ def print_user_data(users, amount):
     print(table)
 
 
+
+# Hanldes the client once the user logged in
+def handle_session(event):
+    close_session = False
+    xmpp.session_start()
+    option = ''
+    print(f'{OKGREEN}Logged in as {xmpp.boundjid.bare}{ENDC}')
+
+    while not close_session:
+        print(main_menu)
+        option = input('Enter an option: ')
+
+        # OPTION 1: Show connected users
+        if option == '1':
+            print(f'\n{BOLD}Every user on this server:{ENDC}\n')
+            users = xmpp.get_all_online()
+            print_all_users(users)
+
+            print(
+                f'\n{BLUE}|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{ENDC}')
+            print(f'\n{BOLD}My roster:{ENDC}\n')
+            roster = xmpp.get_user_dict()
+            print_contacts(roster)
+
