@@ -86,3 +86,24 @@ def print_contacts(user_dict):
     table.sortby = f'{BOLD}SHOW{ENDC}'
     print(table)
 
+
+# Prints a table with every user and its connection data
+def print_user_data(users, amount):
+    table = PrettyTable(border=False)
+    table.field_names = [f'{BOLD}EMAIL{ENDC}',
+                         f'{BOLD}JID{ENDC}',
+                         f'{BOLD}USERNAME{ENDC}',
+                         f'{BOLD}NAME{ENDC}']
+    table.align = 'l'
+    counter = 0
+    user_data = []
+    for data in users:
+        counter += 1
+        user_data.append(data)
+        if counter % 4 == 0:
+            table.add_row(user_data)
+            user_data = []
+
+    print(table)
+
+
