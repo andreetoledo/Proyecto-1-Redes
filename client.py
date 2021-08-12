@@ -653,3 +653,27 @@ class Client(ClientXMPP):
                 if jid:
                     self.user_dict[jid] = [username, name, email]
 
+
+class RegisterBot(ClientXMPP):
+    def __init__(self, jid, password):
+        ClientXMPP.__init__(self, jid, password)
+
+        self.add_event_handler('register', self.register, threaded=False)
+
+    def register(self, event):
+        resp = self.Iq()
+        resp['type'] = 'set'
+        resp['register']['username'] = self.boundjid.user
+        resp['register']['password'] = self.password
+
+        try:
+            resp.send(now=True)
+            print(f'{OKGREEN}Account created for {self.boundjid}!{ENDC}')
+        except IqError:
+            print(
+                f'{FAIL}Could not register account.{ENDC}')
+        except IqTimeout:
+            print(f'{FAIL}No response from server.{ENDC}')
+
+        self.disconnect()
+
