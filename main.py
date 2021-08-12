@@ -51,3 +51,20 @@ def print_contact_index(user_dict):
         counter += 1
 
     print(table)
+
+
+
+# Prints all users through a table
+def print_all_users(user_dict):
+    table = PrettyTable()
+    table.field_names = [f'{BOLD}USERNAME{ENDC}',
+                         f'{BOLD}NAME{ENDC}',
+                         f'{BOLD}EMAIL{ENDC}',
+                         f'{BOLD}JID{ENDC}']
+    table.align = 'l'
+    for jid, user_info in user_dict.items():
+        table.add_row([user_info[0], user_info[1], user_info[2], jid])
+
+    print(table)
+
+
