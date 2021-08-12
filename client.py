@@ -713,3 +713,23 @@ class User():
 
     def get_all_data(self):
         return [self.jid, self.name, self.show, self.status, self.subscription, self.username]
+
+
+class Group():
+    def __init__(self, room, nick, status=None):
+        self.room = room
+        self.nick = nick
+        self.status = status
+        self.messages = []
+
+    def clean_unread_messages(self):
+        self.messages.clear()
+
+    def get_data(self):
+        return [self.room, self.nick]
+
+    def get_messages(self):
+        return self.messages
+
+    def add_message_to_list(self, msg):
+        self.messages.append(msg)
