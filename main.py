@@ -358,3 +358,17 @@ def handle_session(event):
 
         else:
             print(invalid_option)
+
+
+if __name__ == "__main__":
+
+    while not close_login:
+
+        print(login_menu)
+        option = input('Enter an option: ')
+
+        # Register a new user
+        if option == '1':
+            print('\nRegister a new account')
+            username = input('Enter your jid: ')
+            password = getpass('Enter your password: ')
