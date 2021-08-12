@@ -392,3 +392,32 @@ if __name__ == "__main__":
             else:
                 print(f'{FAIL}Input is incorrect.')
 
+        # Login with credentials
+        elif option == '2':
+            print(f'\n{BOLD}Login in to your account{ENDC}')
+            username = input('Enter your username: ')
+            password = getpass('Enter your password: ')
+
+            if not username or not password:
+                print(f'{FAIL} please enter a username and a password!{ENDC}')
+                continue
+
+            xmpp = client.Client(username, password)
+
+            xmpp.add_event_handler(
+                "session_start", handle_session, threaded=True)
+            if xmpp.connect():
+                xmpp.process(block=False)
+                close_login = True
+            else:
+                print(f'{FAIL}Unable to connect to the server{ENDC}')
+                xmpp.disconnect()
+                continue
+
+        elif option == '3':
+            print('Exiting the program...')
+            close_login = True
+
+        else:
+            print(invalid_option)
+
