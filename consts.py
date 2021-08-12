@@ -1,3 +1,6 @@
+#Andree Toledo 18439
+#PROYECTO 1 REDES 2021
+
 #Print class Colors retrieved from:
 #https://www.edureka.co/community/99631/how-to-print-colored-text-in-python
 
