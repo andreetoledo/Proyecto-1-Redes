@@ -35,3 +35,19 @@ def print_groups(group_dict):
         counter += 1
 
     print(table)
+
+# Prints a table with every user and its index
+def print_contact_index(user_dict):
+    table = PrettyTable()
+    table.field_names = [f'{BOLD}No. {ENDC}',
+                         f'{BOLD}USERNAME{ENDC}',
+                         f'{BOLD}SHOW{ENDC}',
+                         f'{BOLD}JID{ENDC}']
+    table.align = 'l'
+    counter = 1
+    for jid, user in user_dict.items():
+        user_info = user.get_connection_data()
+        table.add_row([counter, user_info[0], user_info[1], jid])
+        counter += 1
+
+    print(table)
