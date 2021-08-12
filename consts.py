@@ -1,5 +1,6 @@
 #Print class Colors retrieved from:
 #https://www.edureka.co/community/99631/how-to-print-colored-text-in-python
+
 HEADER = '\033[95m'
 OKBLUE = '\033[94m' + 'OK: '
 OKGREEN = '\033[92m' + 'OK: '
