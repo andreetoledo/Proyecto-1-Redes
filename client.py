@@ -3,6 +3,7 @@
 
 import os
 import time
+import logging
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -30,3 +31,26 @@ class Client(ClientXMPP):
         self.add_event_handler('changed_status', self.wait_for_presences)
         self.add_event_handler('groupchat_presence',
                                self.on_groupchat_presence)
+
+        # FILE TRANSFER
+        self.add_event_handler('si_request', self.on_si_request)
+        self.add_event_handler('ibb_stream_start', self.on_stream_start)
+        self.add_event_handler("ibb_stream_data", self.stream_data)
+        self.add_event_handler("ibb_stream_end", self.stream_closed)
+
+        self.register_plugin('xep_0030')
+        self.register_plugin('xep_0004')
+        self.register_plugin('xep_0066')
+        self.register_plugin('xep_0077')
+        self.register_plugin('xep_0050')
+        self.register_plugin('xep_0047')
+        self.register_plugin('xep_0231')
+        self.register_plugin('xep_0045')
+        self.register_plugin('xep_0095')  # Offer and accept a file transfer
+        self.register_plugin('xep_0096')  # Request file transfer intermediate
+        self.register_plugin('xep_0047')  # Bytestreams
+
+        self['xep_0077'].force_registration = True
+
+        self.received = set()
+        self.presences_received = threading.Event()
