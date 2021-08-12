@@ -510,3 +510,146 @@ class Client(ClientXMPP):
             nick = values['muc']['nick']
             room = values['muc']['room']
             print(f'{BLUE}{GROUPCHAT}{nick} is {user_type} in {room}{ENDC}')
+
+
+    # Get the room dictionary
+
+    def get_group_dict(self):
+        if self.room_dict:
+            return self.room_dict
+        else:
+            return False
+
+    # Get all online users
+    def get_all_online(self):
+
+        # Create the user search IQ
+        iq = self.Iq()
+        iq.set_from(self.boundjid.full)
+        iq.set_to('search.'+self.boundjid.domain)
+        iq.set_type('get')
+        iq.set_query('jabber:iq:search')
+
+        # Send it and expect a form as an answer
+        iq.send(now=True)
+
+        # Create a new form response
+        form = Form()
+        form.set_type('submit')
+
+        # FORM TYPE
+        form.add_field(
+            var='FORM_TYPE',
+            ftype='hidden',
+            type='hidden',
+            value='jabber:iq:search'
+        )
+
+        # SEARCH LABEL
+        form.add_field(
+            var='search',
+            ftype='text-single',
+            type='text-single',
+            label='Search',
+            required=True,
+            value='*'
+        )
+
+        # USERNAME
+        form.add_field(
+            var='Username',
+            ftype='boolean',
+            type='boolean',
+            label='Username',
+            value=1
+        )
+
+        # NAME
+        form.add_field(
+            var='Name',
+            ftype='boolean',
+            type='boolean',
+            label='Name',
+            value=1
+        )
+
+        # EMAIL
+        form.add_field(
+            var='Email',
+            ftype='boolean',
+            type='boolean',
+            label='Email',
+            value=1
+        )
+
+        # Create the next IQ, which will contain the form
+        search = self.Iq()
+        search.set_type('set')
+        search.set_to('search.'+self.boundjid.domain)
+        search.set_from(self.boundjid.full)
+
+        # Create the search query
+        query = ET.Element('{jabber:iq:search}query')
+        # Append the form to the query
+        query.append(form.xml)
+        # Append the query to the IQ
+        search.append(query)
+        # Send de IQ and get the results
+        results = search.send(now=True, block=True)
+
+        # Parse the results so it can be used as an XML tree
+        root = ET.fromstring(str(results))
+        # Process the XML in a dedicated function
+        self.update_user_dict(root)
+
+        # Finally, return all the list of users
+        return self.user_dict
+
+    # Update user dictionary (from search)
+    def update_user_dict(self, xmlObject):
+        # Items to be iterated
+        items = []
+
+        # Append all the <item> tags
+        for child in xmlObject:
+            for node in child:
+                for item in node:
+                    items.append(item)
+
+        # iterate through the tags
+        for item in items:
+            jid = ''
+            email = ''
+            name = ''
+            username = ''
+
+            # Get all the children of the <item> tag
+            childrens = item.getchildren()
+
+            if len(childrens) > 0:
+
+                # Try to get al the fields of the item tag
+                for field in childrens:
+                    # Check if <field> has children
+                    try:
+                        child = field.getchildren()[0]
+                    except:
+                        continue
+
+                    # Get all the different data inside the <field><value> tag
+                    if field.attrib['var'] == 'Email':
+                        email = child.text if child.text else '---'
+
+                    elif field.attrib['var'] == 'jid':
+                        jid = child.text if child.text else '---'
+
+                    elif field.attrib['var'] == 'Name':
+                        name = child.text if child.text else '---'
+
+                    elif field.attrib['var'] == 'Username':
+                        username = child.text if child.text else '---'
+
+                # Append the jid to the dictionary
+                if jid:
+                    self.user_dict[jid] = [username, name, email]
+
