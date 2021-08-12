@@ -1,6 +1,13 @@
 #Andree Toledo 18439
 #PROYECTO 1 REDES 2021
 
+#~~~~~~~~TESTS~~~~~~~~~
+#andreetoledo@alumchat.xyz
+#12345
+
+#prueba@alumchat.xyz
+#12345
+
 import os
 import time
 import logging
