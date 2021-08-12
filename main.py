@@ -12,3 +12,9 @@ from sleekxmpp.exceptions import IqError, IqTimeout
 
 import client
 from consts import *
+
+close_login = False
+
+def get_file_path():
+    file_path = filedialog.askopenfilename()
+    return file_path
