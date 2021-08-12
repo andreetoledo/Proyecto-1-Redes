@@ -214,3 +214,161 @@ class Client(ClientXMPP):
 
             # Wait for the other client to get notified about this
             time.sleep(2)
+
+
+            # Send him all of the encoded data
+            stream.sendall(data)
+
+            # Wait for him to process al of it
+            time.sleep(2)
+
+            # Finally, close the ibb stream
+            stream.close()
+
+        except:
+            print(error_msg)
+
+    def on_si_request(self, iq):
+
+        # Get sender from the iq
+        sender = iq.get_from().user
+
+        # Now, si (where we can get file type)
+        payload = iq.get_payload()[0]
+        file_type = payload.get('mime-type')
+        file_id = payload.get('id')
+
+        # Get file object from payload
+        file = payload.getchildren()[0]
+        # From this, get name, size and date
+        file_name = file.get('name')
+        file_size = file.get('size')
+        file_date = file.get('date')
+
+        # Check if file has a description
+        try:
+            desc = file.getchildren()[0]
+            desc = desc.text
+        except:
+            desc = None
+
+        print(f'{BLUE}|<~~~~~~~~~~~~~~| PETICION DE ARCHIVO RECIVIDA |~~~~~~~~~~~~~~>|{ENDC}')
+        print(f'''
+        {BLUE}{sender} is going to send you a file: {ENDC}
+            - type: {file_type}
+            - name: {file_name}
+            - size: {file_size}
+            - date: {file_date}
+        ''')
+        if desc:
+            print(f'  Description: {desc}')
+
+        # Create empty file
+        dir_path = os.path.join(DIRNAME, 'received_files')
+        self.file_received = file_name
+        with open(os.path.join(dir_path, file_name), 'w') as fp:
+            pass
+
+        # Accept the file requested
+        self.plugin['xep_0095'].accept(jid=iq.get_from().full, sid=file_id)
+
+    # Let the user know the file is about to start downloading
+    def on_stream_start(self, stream):
+        print(f'{RED}{STREAM_TRANSFER}{ENDC}')
+
+    # Append the recieved data to the file
+    def stream_data(self, stream):
+        b64_data = stream['data']
+        dir_path = os.path.join(
+            DIRNAME, f'received_files/{self.file_received}')
+
+        with open(dir_path, 'ab+') as new_file:
+            new_file.write(base64.decodebytes(b64_data))
+
+    # Print messages when file transfer finished
+    def stream_closed(self, stream):
+        print(f'{OKGREEN}File transfer completed!{ENDC}')
+        print('Stream closed: %s from %s' % (stream.sid, stream.peer_jid))
+
+    # Act when logged out/disconnected
+    def got_disconnected(self, event):
+        print(f'{OKBLUE}Logged out from the current session{ENDC}')
+
+    # Act when authentication fails
+    def on_failed_auth(self, event):
+        print(f'{FAIL}Credentials are not correct.{ENDC}')
+        self.disconnect()
+
+    # Add a user from his jid
+    def add_user(self, jid):
+        self.send_presence_subscription(pto=jid,
+                                        ptype='subscribe',
+                                        pfrom=self.boundjid.bare)
+
+        if not jid in self.contact_dict:
+            self.contact_dict[jid] = User(
+                jid, '', '', '', 'to', str(jid.split('@')[0]))
+        print(f'{OKBLUE}{SUSCRIPTION} Subscribed to {jid}!{ENDC}')
+        self.get_roster()
+        time.sleep(2)
+        self.create_user_dict()
+
+    # Search for a user by his username
+    def get_user_data(self, username):
+        # Create the user search IQ
+        iq = self.Iq()
+        iq.set_from(self.boundjid.full)
+        iq.set_to('search.'+self.boundjid.domain)
+        iq.set_type('get')
+        iq.set_query('jabber:iq:search')
+
+        # Send it and expect a form as an answer
+        iq.send(now=True)
+
+        # Create a new form response
+        form = Form()
+        form.set_type('submit')
+
+        # FORM TYPE
+        form.add_field(
+            var='FORM_TYPE',
+            ftype='hidden',
+            type='hidden',
+            value='jabber:iq:search'
+        )
+
+        # SEARCH LABEL
+        form.add_field(
+            var='search',
+            ftype='text-single',
+            type='text-single',
+            label='Search',
+            required=True,
+            value=username
+        )
+
+        # USERNAME
+        form.add_field(
+            var='Username',
+            ftype='boolean',
+            type='boolean',
+            label='Username',
+            value=1
+        )
+
+        # Create the next IQ, which will contain the form
+        search = self.Iq()
+        search.set_type('set')
+        search.set_to('search.'+self.boundjid.domain)
+        search.set_from(self.boundjid.full)
+
+        # Create the search query
+        query = ET.Element('{jabber:iq:search}query')
+        # Append the form to the query
+        query.append(form.xml)
+        # Append the query to the IQ
+        search.append(query)
+        # Send de IQ and get the results
+        results = search.send(now=True, block=True)
+
+        res_values = results.findall('.//{jabber:x:data}value')
