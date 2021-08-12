@@ -306,3 +306,55 @@ def handle_session(event):
             # Send the presence message and inform the user about it.
             xmpp.presence_message(show, status)
             print(f'{OKGREEN}Presence message sent!{ENDC}')
+
+        # OPTION 7: Send a file
+        elif option == '7':
+            print(f'{BOLD}Send a file{ENDC}')
+            # Get updated roster
+            roster = xmpp.get_user_dict()
+            # Get all users as list
+            users = list(roster.keys())
+            # Print table of users with their index
+            print_contact_index(roster)
+            # Ask for input
+            recipient = input('\nEnter recipient index: ')
+
+            try:
+                # Check if user index was correct
+                dest = users[int(recipient)-1]
+            except:
+                # Else, repeat
+                print(invalid_option)
+                continue
+
+            try:
+                import tkinter as tk
+                from tkinter import filedialog
+                root = tk.Tk()
+                root.mainloop()
+                file_path = get_file_path()
+            except:
+                file_path = str(input(
+                    'Enter the path of the file you want to send: '))
+
+            if file_path:
+                xmpp.request_si(dest, file_path)
+            else:
+                print(invalid_option)
+                continue
+
+        # OPTION 8: Log out.
+        elif option == '8':
+            print(f'\n{BOLD}Logging out of {xmpp.boundjid.bare}{ENDC}')
+            xmpp.disconnect()
+            close_session = True
+
+        # OPTION 9: Delete account from server.
+        elif option == '9':
+            print(f'\n{WARNING}Deleting account: {xmpp.boundjid.bare}{ENDC}')
+            xmpp.delete_account()
+            xmpp.disconnect()
+            close_session = True
+
+        else:
+            print(invalid_option)
