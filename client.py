@@ -372,3 +372,141 @@ class Client(ClientXMPP):
         results = search.send(now=True, block=True)
 
         res_values = results.findall('.//{jabber:x:data}value')
+
+        amount = 0
+        for value in res_values:
+            if value.text:
+                if '@' in value.text:
+                    amount += 1
+
+        if not res_values:
+            return False, amount
+
+        return [value.text if value.text else 'N/A' for value in res_values], amount
+
+    # Act when a new presence subscribes to you
+    def new_presence_subscribed(self, presence):
+        print(f'{BLUE}{SUSCRIPTION} {presence.get_from()} subscribed to you!{ENDC}')
+
+    # Delete account from server
+
+    def delete_account(self):
+        resp = self.Iq()
+        resp['type'] = 'set'
+        resp['from'] = self.boundjid.full
+        resp['register']['remove'] = True
+
+        try:
+            resp.send(now=True)
+            print(f'{OKGREEN}Account deleted for {self.boundjid}{ENDC}')
+        except IqError as e:
+            logging.error('Could not unregister account: %s' %
+                          e.iq['error']['text'])
+            self.disconnect()
+        except IqTimeout:
+            logging.error('No response from server.')
+            self.disconnect()
+
+    # Act when a contact gets offline
+    def presence_offline(self, presence):
+        new_presence = str(presence['from']).split('/')[0]
+        if self.boundjid.bare != new_presence and new_presence in self.contact_dict:
+            self.contact_dict[new_presence].update_data(
+                '', presence['type'], '')
+
+    # Act when a contact gets online
+    def presence_online(self, presence):
+        new_presence = str(presence['from']).split('/')[0]
+        resource = str(presence['from']).split('/')[1]
+
+        try:
+            if self.boundjid.bare != new_presence and new_presence in self.contact_dict:
+                self.contact_dict[new_presence].update_data(
+                    '', presence['type'], resource)
+
+                print(
+                    f'{BLUE}{GOT_ONLINE} {new_presence} got online!{ENDC}')
+        except:
+            pass
+
+    # Send a presence message with its show and status
+    def presence_message(self, show, status):
+        self.send_presence(pshow=show, pstatus=status)
+
+    # Send a message to someone directly
+    def send_session_message(self, recipient, message):
+        mfrom = self.boundjid.bare
+        self.send_message(
+            mto=recipient,
+            mbody=message,
+            mtype='chat',
+            mfrom=self.boundjid.bare)
+        if recipient in self.contact_dict and message:
+            self.contact_dict[recipient].add_message_to_list(
+                (mfrom.split('@')[0], message))
+
+        if message:
+            print(f'{OKGREEN} Message sent!{ENDC}')
+
+    # Join an existing room
+    def join_room(self, room, nick):
+        status = 'Hello world!'
+        self.plugin['xep_0045'].joinMUC(
+            room,
+            nick,
+            pstatus=status,
+            pfrom=self.boundjid.full,
+            wait=True)
+
+        if not room in self.room_dict:
+            self.room_dict[room] = Group(room, nick, status)
+
+    # Create a new room with its name and nick
+    def create_new_room(self, room, nick):
+        status = 'Hello world!'
+        self.plugin['xep_0045'].joinMUC(
+            room,
+            nick,
+            pstatus=status,
+            pfrom=self.boundjid.full,
+            wait=True)
+
+        self.plugin['xep_0045'].setAffiliation(
+            room, self.boundjid.full, affiliation='owner')
+
+        self.plugin['xep_0045'].configureRoom(room, ifrom=self.boundjid.full)
+
+        self.room_dict[room] = Group(room, nick, status)
+
+    # Leave a room
+    def leave_room(self, room, nick):
+        self.plugin['xep_0045'].leaveMUC(room, nick)
+
+        if room in self.room_dict:
+            del self.room_dict[room]
+        else:
+            print(f'{FAIL} You are not part of that room!{ENDC}')
+
+    # Send a message to a room
+    def send_groupchat_message(self, room, message):
+        try:
+            self.send_message(
+                mto=room,
+                mbody=message,
+                mtype='groupchat',
+                mfrom=self.boundjid.full
+            )
+
+            return True
+        except:
+            return False
+
+    def on_groupchat_presence(self, presence):
+        values = presence.values
+        presence_from = presence.get_from()
+
+        if presence_from.resource != self.room_dict[presence_from.bare].nick:
+            user_type = values['type']
+            nick = values['muc']['nick']
+            room = values['muc']['room']
+            print(f'{BLUE}{GROUPCHAT}{nick} is {user_type} in {room}{ENDC}')
