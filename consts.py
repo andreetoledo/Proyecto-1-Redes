@@ -36,3 +36,26 @@ Elija el numero de la opcion que desea.
 9: Eliminar mi cuenta
 {HEADER}|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|{ENDC}
 """
+
+roup_options = f"""
+\tSeleccione una de las siguientes opciones:
+\t1: Crea un chat grupal
+\t2: Unirse a un chat grupal
+\t3: Enviar mensaje al grupo
+\t4: Salir de un chat grupal
+\t5: Cancelar
+"""
+
+show_options = f"""
+\tSeleccione una de las siguientes opciones:
+\t1. chat
+\t2. Ausente
+\t3. Largo tiempo ausente
+\t4. No molestar
+"""
+
+# Errors messages
+error_msg = f"""
+{FAIL}Algo ha salido mal...{ENDC}
+"""
+invalid_option = f'{FAIL}porfavor, ingrese una opcion valida!{ENDC}'
