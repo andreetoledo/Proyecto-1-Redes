@@ -50,12 +50,53 @@ show_options = f"""
 \tSeleccione una de las siguientes opciones:
 \t1. chat
 \t2. Ausente
-\t3. Largo tiempo ausente
+\t3. Largo tiempo ausente 
 \t4. No molestar
 """
+#3. XA
+#4. DND
 
 # Errors messages
 error_msg = f"""
 {FAIL}Algo ha salido mal...{ENDC}
 """
 invalid_option = f'{FAIL}porfavor, ingrese una opcion valida!{ENDC}'
+
+chat_session = f"""
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+|           ESTAS EN UNA SESIÓN DE CHAT PRIVADA        |
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Escribe {BOLD}exit{ENDC} para salir de la sesion de chat.
+"""
+
+# Userful variables
+show_array = ['chat', 'away', 'xa', 'dnd']
+
+# NOTIFICATIONS:
+NEW_MESSAGE = '''
+|~~~~~~~~~~~~~~> MENSAJE NUEVO <~~~~~~~~~~~~~~|
+'''
+
+FILE_OFFER = '''
+<~~~~~~~~~~~~~~| ARCHIVO OFRECIDO |~~~~~~~~~~~~~~>
+'''
+
+SUSCRIPTION = '''
+|~~~~~~~~~~~~~~| SUSCRIPCION |~~~~~~~~~~~~~~|
+'''
+
+GOT_ONLINE = '''
+|~~~~~~~~~~~~~~> EN LINEA <~~~~~~~~~~~~~~|
+'''
+
+GROUPCHAT = '''
+|~~~~~~~~~~~~~~>  CHAT GRUPAL <~~~~~~~~~~~~~~|
+'''
+
+STREAM_TRANSFER = '''
+|~~~~~~~~~~~~~~> TRANSMISION INICIADA <~~~~~~~~~~~~~~|
+         Transferencia de archivo iniciada!
+
+Porfavor espere...
+'''
